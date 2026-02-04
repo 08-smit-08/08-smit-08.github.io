@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>💖 Something Special 💖</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+:root{
+  --pink:#ff4d6d;
+  --hot:#ff006e;
+  --glass:rgba(255,255,255,0.18);
+  --blur:blur(20px);
+}
+
+*{margin:0;padding:0;box-sizing:border-box}
+
+body{
+  height:100vh;
+  overflow:hidden;
+  font-family:'Segoe UI',sans-serif;
+  background:radial-gradient(circle at top,#ffb3c1,#ff4d6d);
+  color:white;
+}
+
+canvas{
+  position:fixed;
+  inset:0;
+  z-index:0;
+}
+
+/* SCENES */
+.scene{
+  position:absolute;
+  inset:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  flex-direction:column;
+  opacity:0;
+  pointer-events:none;
+  transition:opacity 1s ease;
+  z-index:2;
+}
+.scene.active{
+  opacity:1;
+  pointer-events:auto;
+}
+
+/* CARD */
+.card{
+  background:var(--glass);
+  backdrop-filter:var(--blur);
+  border-radius:30px;
+  padding:40px 36px;
+  text-align:center;
+  box-shadow:0 0 60px rgba(255,0,80,.45);
+  animation:float 4s ease-in-out infinite;
+}
+@keyframes float{
+  0%,100%{transform:translateY(0)}
+  50%{transform:translateY(-14px)}
+}
+
+h1{
+  font-size:2.2rem;
+  margin-bottom:16px;
+  text-shadow:0 0 18px #ffb3c1;
+}
+
+.sub{
+  font-size:1.1rem;
+  opacity:.9;
+  margin-bottom:20px;
+  color:#ffe5ec;
+}
+
+/* BUTTONS */
+.btn{
+  padding:14px 34px;
+  border-radius:40px;
+  border:none;
+  font-size:1.1rem;
+  margin:10px;
+  cursor:pointer;
+  transition:.3s;
+}
+.yes{
+  background:linear-gradient(45deg,var(--hot),var(--pink));
+  color:white;
+  box-shadow:0 0 22px var(--hot);
+}
+.yes:hover{
+  transform:scale(1.1);
+  box-shadow:0 0 45px var(--hot);
+}
+.no{
+  background:#444;
+  color:#eee;
+  position:relative;
+}
+
+/* IMAGE */
+.center-img{
+  width:240px;
+  margin-bottom:15px;
+  filter:drop-shadow(0 0 25px pink);
+}
+
+/* BANNER */
+.banner{
+  margin-top:10px;
+  font-size:1.9rem;
+  animation:pulse 1.5s infinite;
+}
+@keyframes pulse{
+  0%,100%{transform:scale(1)}
+  50%{transform:scale(1.12)}
+}
+</style>
+</head>
+
+<body>
+
+<canvas id="hearts"></canvas>
+<canvas id="fireworks"></canvas>
+
+<!-- SCENE 1 -->
+<div class="scene active" id="s1">
+  <div class="card">
+    <h1>💖 Hellooo… how are you? 💖</h1>
+    <div class="sub">For someone special 💕</div>
+    <button class="btn yes" onclick="go(2)">Fine 😌</button>
+    <button class="btn no">Not fine</button>
+  </div>
+</div>
+
+<!-- SCENE 2 -->
+<div class="scene" id="s2">
+  <div class="card">
+    <h1>💘 Will you be my Valentine? 💘</h1>
+    <div class="sub">This is only for you 💖</div>
+    <button class="btn yes" onclick="go(3)">Yesssss 💕</button>
+    <button class="btn no">Chal hut 😏</button>
+  </div>
+</div>
+
+<!-- SCENE 3 -->
+<div class="scene" id="s3">
+  <img class="center-img" src="bheem.png" alt="special image">
+  <div class="banner">🎉 I KNEW IT 💖🎉</div>
+  <div class="sub">You just made my day.</div>
+</div>
+
+<audio id="music" loop>
+  <source src="song.mp3" type="audio/mpeg">
+</audio>
+
+<script>
+/* SCENE CONTROL */
+function go(n){
+  document.querySelectorAll('.scene').forEach(s=>s.classList.remove('active'));
+  document.getElementById('s'+n).classList.add('active');
+  if(n===3){
+    document.getElementById('music').play();
+    launchFireworks();
+  }
+}
+
+/* RUNAWAY BUTTON */
+document.querySelectorAll('.no').forEach(btn=>{
+  const move=()=>{
+    btn.style.transform=`translate(${Math.random()*220-110}px,${Math.random()*160-80}px)`;
+  };
+  btn.addEventListener('mouseenter',move);
+  btn.addEventListener('touchstart',move);
+});
+
+/* HEARTS */
+const c=document.getElementById('hearts'),ctx=c.getContext('2d');
+let w,h,hearts=[];
+function resize(){
+  w=c.width=innerWidth;
+  h=c.height=innerHeight;
+  fw.width=w; fw.height=h;
+}
+window.onresize=resize;resize();
+
+function spawn(){
+  hearts.push({
+    x:Math.random()*w,
+    y:h+20,
+    s:Math.random()*1.5+0.6,
+    v:Math.random()*1+0.6,
+    a:Math.random()*Math.PI*2
+  });
+}
+function draw(){
+  ctx.clearRect(0,0,w,h);
+  hearts.forEach((p,i)=>{
+    p.y-=p.v;
+    p.x+=Math.sin(p.a+=0.02);
+    ctx.font=30*p.s+"px serif";
+    ctx.fillText("💖",p.x,p.y);
+    if(p.y<-40) hearts.splice(i,1);
+  });
+  requestAnimationFrame(draw);
+}
+setInterval(spawn,110);
+draw();
+
+/* FIREWORKS */
+const fw=document.getElementById('fireworks');
+const fx=fw.getContext('2d');
+let particles=[];
+
+function launchFireworks(){
+  for(let i=0;i<6;i++){
+    setTimeout(()=>explode(
+      Math.random()*w,
+      Math.random()*h*0.5
+    ), i*400);
+  }
+}
+
+function explode(x,y){
+  for(let i=0;i<80;i++){
+    particles.push({
+      x,y,
+      vx:(Math.random()-0.5)*8,
+      vy:(Math.random()-0.5)*8,
+      life:80
+    });
+  }
+}
+
+(function animateFireworks(){
+  fx.clearRect(0,0,w,h);
+  particles.forEach((p,i)=>{
+    p.x+=p.vx;
+    p.y+=p.vy;
+    p.vy+=0.05;
+    p.life--;
+    fx.font="18px serif";
+    fx.fillText("✨",p.x,p.y);
+    if(p.life<=0) particles.splice(i,1);
+  });
+  requestAnimationFrame(animateFireworks);
+})();
+</script>
+
+</body>
+</html>
